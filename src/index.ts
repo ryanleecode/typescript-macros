@@ -4,6 +4,7 @@ import { ImportDeclarationVisitor } from './transformer/ImportDeclarationVisitor
 import { MacroVisitor } from './transformer/MacroVisitor'
 
 export * from './macro'
+export { run } from '@oclif/command'
 
 const transformer = buildTransformer(Context, [
   ImportDeclarationVisitor,
