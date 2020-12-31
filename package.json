@@ -10,6 +10,10 @@
   },
   "author": "Ryan",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ryanleecode/typescript-macros.git"
+  },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
     "@types/jest": "^26.0.19",
