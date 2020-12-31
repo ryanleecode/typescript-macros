@@ -10,7 +10,7 @@ import {
 } from 'typescript'
 import type { Context } from './Context'
 
-const MODULE_NAME = 'typed-macros'
+const MODULE_NAME = '@sanity-ts/typescript-macros'
 const DEFINE_MACRO = 'defineMacro'
 
 /**

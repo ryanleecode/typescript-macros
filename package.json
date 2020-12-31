@@ -1,5 +1,5 @@
 {
-  "name": "typed-macros",
+  "name": "@sanity-ts/typescript-macros",
   "version": "0.0.0-alpha",
   "description": "",
   "main": "dist/index.js",
@@ -34,7 +34,7 @@
     "tslib": "^2.0.3"
   },
   "bin": {
-    "typed-macros": "./bin/run"
+    "typescript-macros": "./bin/run"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -47,7 +47,7 @@
   ],
   "oclif": {
     "commands": "./dist/commands",
-    "bin": "typed-macros",
+    "bin": "typescript-macros",
     "plugins": [
       "@oclif/plugin-help"
     ]
