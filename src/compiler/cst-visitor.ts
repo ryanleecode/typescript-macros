@@ -2,7 +2,6 @@ import {
   ClassDeclaration,
   DecoratorExpression,
   NamespaceExpression,
-  StructExpression,
 } from './cst'
 import { Parser } from './parser'
 import ts from 'typescript'
@@ -11,6 +10,10 @@ import * as A from 'fp-ts/lib/Array'
 import { pipe } from 'fp-ts/lib/function'
 
 type Result<A> = E.Either<unknown, A>
+type DecoratorExpressionResult = Result<{
+  heritageClauses: ts.HeritageClause[]
+  members: ts.ClassElement[]
+}>
 
 export class CSTVisitor extends Parser.BaseCstVisitorConstructorWithDefaults {
   private readonly factory: ts.NodeFactory
@@ -65,16 +68,13 @@ export class CSTVisitor extends Parser.BaseCstVisitorConstructorWithDefaults {
     ]
     const className = ctx.Identifier[0].image
     const typeParameters: ts.TypeParameterDeclaration[] = []
-    const members: ts.ClassElement[] = []
 
     return pipe(
       E.bindTo('decoratorTokens')(
         A.array.sequence(E.either)(
           (ctx.decoratorExpression || []).map(
-            (
-              decoratorExpression,
-            ): Result<{ heritageClauses: ts.HeritageClause[] }> =>
-              this.visit(decoratorExpression),
+            (decoratorExpression): DecoratorExpressionResult =>
+              this.visit(decoratorExpression, className),
           ),
         ),
       ),
@@ -89,7 +89,15 @@ export class CSTVisitor extends Parser.BaseCstVisitorConstructorWithDefaults {
           ),
         ),
       ),
-      E.map(({ heritageClauses }) =>
+      E.bind('members', ({ decoratorTokens }) =>
+        E.right(
+          pipe(
+            A.array.map(decoratorTokens, ({ members }) => members),
+            A.flatten,
+          ),
+        ),
+      ),
+      E.map(({ heritageClauses, members }) =>
         factory.createClassDeclaration(
           decorators,
           modifiers,
@@ -104,7 +112,8 @@ export class CSTVisitor extends Parser.BaseCstVisitorConstructorWithDefaults {
 
   decoratorExpression(
     ctx: DecoratorExpression,
-  ): E.Either<unknown, { heritageClauses: ts.HeritageClause[] }> {
+    className: string,
+  ): DecoratorExpressionResult {
     const { factory } = this
 
     const decorator = ctx.Identifier[0].image
@@ -120,10 +129,49 @@ export class CSTVisitor extends Parser.BaseCstVisitorConstructorWithDefaults {
               ),
             ]),
           ],
+          members: [
+            this.factory.createPropertyDeclaration(
+              undefined,
+              [factory.createModifier(ts.SyntaxKind.PublicKeyword)],
+              factory.createIdentifier('_type'),
+              undefined,
+              factory.createLiteralTypeNode(
+                factory.createStringLiteral(className),
+              ),
+              undefined,
+            ),
+            factory.createConstructorDeclaration(
+              undefined,
+              undefined,
+              [],
+              factory.createBlock(
+                [
+                  factory.createExpressionStatement(
+                    factory.createCallExpression(
+                      factory.createSuper(),
+                      undefined,
+                      [factory.createStringLiteral('')],
+                    ),
+                  ),
+                  factory.createExpressionStatement(
+                    factory.createBinaryExpression(
+                      factory.createPropertyAccessExpression(
+                        factory.createThis(),
+                        factory.createIdentifier('_type'),
+                      ),
+                      factory.createToken(ts.SyntaxKind.EqualsToken),
+                      factory.createStringLiteral(className),
+                    ),
+                  ),
+                ],
+                true,
+              ),
+            ),
+          ],
         })
       default:
         // todo add error diagnostic for unrecognized decorator
-        return E.right({ heritageClauses: [] })
+        return E.right({ heritageClauses: [], members: [] })
     }
   }
 }

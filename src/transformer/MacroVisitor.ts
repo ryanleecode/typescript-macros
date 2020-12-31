@@ -23,7 +23,7 @@ export class MacroVisitor implements NodeVisitor<ExpressionStatement> {
   public visit(node: ExpressionStatement): Node[] {
     const { defineMacroIdents, factory } = this.context
 
-    if (node.getChildCount() == 0) {
+    if (node.pos == -1 || node.getChildCount() == 0) {
       return [node]
     }
 
