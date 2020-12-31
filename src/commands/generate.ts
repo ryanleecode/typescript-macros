@@ -3,6 +3,7 @@ import { Command } from '@oclif/command'
 import * as path from 'path'
 import transformer from '..'
 import * as tsMorph from 'ts-morph'
+import prettier from 'prettier'
 
 export default class Generate extends Command {
   static description = 'Generates the typings for macros'
@@ -55,6 +56,9 @@ export default class Generate extends Command {
         })
         .getFiles()[0]!
       declaration.text = declaration.text.replace(/^export\s*/, '')
+      declaration.text = prettier.format(declaration.text, {
+        parser: 'babel-ts',
+      })
 
       project.createSourceFile(outputFile.getFilePath(), declaration.text, {
         overwrite: true,
