@@ -250,9 +250,51 @@ export class CSTVisitor extends Parser.BaseCstVisitorConstructor {
         members.push(
           factory.createConstructorDeclaration(
             undefined,
-            [],
+            [factory.createModifier(ts.SyntaxKind.PrivateKeyword)],
             parameterDeclarations,
             factory.createBlock(constructorStatements, true),
+          ),
+        )
+
+        // add static constructor
+        members.push(
+          factory.createMethodDeclaration(
+            undefined,
+            [
+              factory.createModifier(ts.SyntaxKind.PublicKeyword),
+              factory.createModifier(ts.SyntaxKind.StaticKeyword),
+            ],
+            undefined,
+            factory.createIdentifier('new'),
+            undefined,
+            undefined,
+            parameterDeclarations,
+            factory.createTypeReferenceNode(
+              factory.createIdentifier(className),
+              undefined,
+            ),
+            factory.createBlock(
+              [
+                factory.createReturnStatement(
+                  factory.createNewExpression(
+                    factory.createIdentifier(className),
+                    undefined,
+                    [
+                      factory.createObjectLiteralExpression(
+                        Object.keys(descriptor.structFields).map((field) =>
+                          factory.createShorthandPropertyAssignment(
+                            factory.createIdentifier(field),
+                            undefined,
+                          ),
+                        ),
+                        false,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              true,
+            ),
           ),
         )
 
