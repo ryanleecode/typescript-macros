@@ -29,6 +29,11 @@ export type CallExpression = {
 
 export type StructExpression = {
   LeftBracket: NonEmptyArray<IToken>
-
+  kvPair: CstNode[]
   RightBracket: NonEmptyArray<IToken>
+}
+
+export type KvPair = {
+  Identifier: NonEmptyArray<IToken>
+  Colon: NonEmptyArray<IToken>
 }
